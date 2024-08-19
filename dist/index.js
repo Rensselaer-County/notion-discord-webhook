@@ -49,15 +49,14 @@ function sendMessage(payload) {
         if (timeElapsed > POLL_RATE) {
             break;
         }
-        const project = page.properties.Project;
-        if (project && project.title.length > 0) {
-            const title = project.title[0].plain_text;
-            const url = page.url;
+        const property = page.properties.Name;
+        if (property && property.title.length > 0) {
+            const title = property.title[0].plain_text;
             yield sendMessage({
                 embeds: [
                     {
                         title,
-                        url,
+                        url: page.url,
                         color: 0xffffff,
                         description: "A bug has been reported on **Notion** in the **Issue Tracker**",
                         timestamp: createdTime,

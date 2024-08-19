@@ -52,17 +52,16 @@ async function sendMessage(payload: Record<string, any>) {
       break;
     }
 
-    const project: any = page.properties.Project;
+    const property: any = page.properties.Name;
 
-    if (project && project.title.length > 0) {
-      const title = project.title[0].plain_text;
-      const url = page.url;
+    if (property && property.title.length > 0) {
+      const title = property.title[0].plain_text;
 
       await sendMessage({
         embeds: [
           {
             title,
-            url,
+            url: page.url,
             color: 0xffffff,
             description:
               "A bug has been reported on **Notion** in the **Issue Tracker**",
