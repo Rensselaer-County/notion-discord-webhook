@@ -13,7 +13,7 @@ Looks for new pages in a Notion database and sends them to a Discord channel
 2. Run:
 
 ```bash
-npx tsc && node src/index.js
+npx tsc && node dist/index.js
 ```
 
 > [!NOTE]
