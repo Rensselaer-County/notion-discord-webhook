@@ -1,0 +1,17 @@
+{
+  "name": "notion-discord-webhook",
+  "description": "Looks for new pages in a Notion database and sends them to a Discord channel",
+  "license": "Apache-2.0",
+  "author": "Dervex",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "dotenv": "^16.4.5"
+  }
+}
