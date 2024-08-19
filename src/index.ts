@@ -64,7 +64,7 @@ async function sendMessage(payload: Record<string, any>) {
             url: page.url,
             color: 0xffffff,
             description:
-              "A bug has been reported on **Notion** in the **Issue Tracker**",
+              "A bug has been reported on **Notion** on the **Issue Tracker** board.",
             timestamp: createdTime,
           },
         ],
