@@ -2,7 +2,7 @@ import { Client } from "@notionhq/client";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
 import { configDotenv } from "dotenv";
 
-const POLL_RATE = 10; // in minutes
+const MAX_PAGE_AGE = 45; // in minutes
 
 configDotenv();
 
@@ -48,7 +48,7 @@ async function sendMessage(payload: Record<string, any>) {
     const timeElapsed =
       (new Date().getTime() - Date.parse(createdTime)) / 1000 / 60;
 
-    if (timeElapsed > POLL_RATE) {
+    if (timeElapsed > MAX_PAGE_AGE) {
       break;
     }
 

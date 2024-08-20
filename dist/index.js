@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@notionhq/client");
 const dotenv_1 = require("dotenv");
-const POLL_RATE = 10; // in minutes
+const MAX_PAGE_AGE = 45; // in minutes
 (0, dotenv_1.configDotenv)();
 function sendMessage(payload) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -46,7 +46,7 @@ function sendMessage(payload) {
     for (const page of response.results) {
         const createdTime = page.created_time;
         const timeElapsed = (new Date().getTime() - Date.parse(createdTime)) / 1000 / 60;
-        if (timeElapsed > POLL_RATE) {
+        if (timeElapsed > MAX_PAGE_AGE) {
             break;
         }
         const property = page.properties.Name;
@@ -58,7 +58,7 @@ function sendMessage(payload) {
                         title,
                         url: page.url,
                         color: 0xffffff,
-                        description: "A bug has been reported on **Notion** in the **Issue Tracker**",
+                        description: "A bug has been reported on **Notion** on the **Issue Tracker** board.",
                         timestamp: createdTime,
                     },
                 ],
