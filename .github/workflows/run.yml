@@ -2,16 +2,16 @@ name: Run Action
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "*/15 * * * *"
+  schedule:
+    - cron: "*/15 * * * *"
 
 jobs:
   run-action:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        env:
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.0
+        with:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
