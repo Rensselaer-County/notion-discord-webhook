@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@notionhq/client");
 const dotenv_1 = require("dotenv");
 const MAX_PAGE_AGE = 45; // in minutes
+const MAX_PAGE_COUNT = 20;
 (0, dotenv_1.configDotenv)();
 function sendMessage(payload) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -35,13 +36,25 @@ function sendMessage(payload) {
         });
     });
 }
+function parseArrayProperty(array, isPerson) {
+    const key = isPerson ? "people" : "multi_select";
+    if (array[key].length <= 0) {
+        return;
+    }
+    let value = "";
+    for (const obj of array[key]) {
+        value += obj.name + ", ";
+    }
+    value = value.slice(0, -2);
+    return value;
+}
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const notion = new client_1.Client({
         auth: process.env.NOTION_API_KEY,
     });
     const response = yield notion.databases.query({
         database_id: process.env.DATABASE_ID,
-        page_size: 20,
+        page_size: MAX_PAGE_COUNT,
     });
     for (const page of response.results) {
         const createdTime = page.created_time;
@@ -49,20 +62,51 @@ function sendMessage(payload) {
         if (timeElapsed > MAX_PAGE_AGE) {
             break;
         }
-        const property = page.properties.Name;
-        if (property && property.title.length > 0) {
-            const title = property.title[0].plain_text;
-            yield sendMessage({
-                embeds: [
-                    {
-                        title,
-                        url: page.url,
-                        color: 0xffffff,
-                        description: "A bug has been reported on **Notion** on the **Issue Tracker** board.",
-                        timestamp: createdTime,
-                    },
-                ],
+        const fields = [];
+        const embed = {
+            url: page.url,
+            color: 0xffffff,
+            description: "A bug has been reported on **Notion** on the **Issue Tracker** board.",
+            timestamp: createdTime,
+        };
+        const name = page.properties.Name;
+        if (name.title.length > 0) {
+            embed.title = name.title[0].plain_text;
+        }
+        else {
+            embed.title = "Untitled";
+        }
+        const status = page.properties.Status;
+        if (status.status.name) {
+            fields.push({
+                name: "Status",
+                value: status.status.name,
             });
         }
+        const assign = parseArrayProperty(page.properties.Assign, true);
+        if (assign) {
+            fields.push({
+                name: "Assign",
+                value: assign,
+            });
+        }
+        const place = parseArrayProperty(page.properties.Place);
+        if (place) {
+            fields.push({
+                name: "Place",
+                value: place,
+            });
+        }
+        const type = parseArrayProperty(page.properties.Type);
+        if (type) {
+            fields.push({
+                name: "Type",
+                value: type,
+            });
+        }
+        embed.fields = fields;
+        yield sendMessage({
+            embeds: [embed],
+        });
     }
 }))();

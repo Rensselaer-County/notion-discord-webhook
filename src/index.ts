@@ -1,8 +1,10 @@
 import { Client } from "@notionhq/client";
 import { DatabaseObjectResponse } from "@notionhq/client/build/src/api-endpoints";
+import { APIEmbed, APIEmbedField } from "discord-api-types/v10";
 import { configDotenv } from "dotenv";
 
 const MAX_PAGE_AGE = 45; // in minutes
+const MAX_PAGE_COUNT = 20;
 
 configDotenv();
 
@@ -33,6 +35,27 @@ async function sendMessage(payload: Record<string, any>) {
     });
 }
 
+function parseArrayProperty(
+  array: any,
+  isPerson?: boolean,
+): string | undefined {
+  const key = isPerson ? "people" : "multi_select";
+
+  if (array[key].length <= 0) {
+    return;
+  }
+
+  let value = "";
+
+  for (const obj of array[key]) {
+    value += obj.name + ", ";
+  }
+
+  value = value.slice(0, -2);
+
+  return value;
+}
+
 (async () => {
   const notion = new Client({
     auth: process.env.NOTION_API_KEY,
@@ -40,7 +63,7 @@ async function sendMessage(payload: Record<string, any>) {
 
   const response = await notion.databases.query({
     database_id: process.env.DATABASE_ID!,
-    page_size: 20,
+    page_size: MAX_PAGE_COUNT,
   });
 
   for (const page of response.results as DatabaseObjectResponse[]) {
@@ -52,23 +75,58 @@ async function sendMessage(payload: Record<string, any>) {
       break;
     }
 
-    const property: any = page.properties.Name;
+    const fields: APIEmbedField[] = [];
+    const embed: APIEmbed = {
+      url: page.url,
+      color: 0xffffff,
+      description:
+        "A bug has been reported on **Notion** on the **Issue Tracker** board.",
+      timestamp: createdTime,
+    };
 
-    if (property && property.title.length > 0) {
-      const title = property.title[0].plain_text;
+    const name: any = page.properties.Name;
+    if (name.title.length > 0) {
+      embed.title = name.title[0].plain_text;
+    } else {
+      embed.title = "Untitled";
+    }
 
-      await sendMessage({
-        embeds: [
-          {
-            title,
-            url: page.url,
-            color: 0xffffff,
-            description:
-              "A bug has been reported on **Notion** on the **Issue Tracker** board.",
-            timestamp: createdTime,
-          },
-        ],
+    const status: any = page.properties.Status;
+    if (status.status.name) {
+      fields.push({
+        name: "Status",
+        value: status.status.name,
       });
     }
+
+    const assign = parseArrayProperty(page.properties.Assign, true);
+    if (assign) {
+      fields.push({
+        name: "Assign",
+        value: assign,
+      });
+    }
+
+    const place = parseArrayProperty(page.properties.Place);
+    if (place) {
+      fields.push({
+        name: "Place",
+        value: place,
+      });
+    }
+
+    const type = parseArrayProperty(page.properties.Type);
+    if (type) {
+      fields.push({
+        name: "Type",
+        value: type,
+      });
+    }
+
+    embed.fields = fields;
+
+    await sendMessage({
+      embeds: [embed],
+    });
   }
 })();
