@@ -66964,19 +66964,19 @@ exports.loadLastPageId = loadLastPageId;
 const cache_1 = __nccwpck_require__(7799);
 const fs_1 = __nccwpck_require__(7147);
 const PATHS = ["data.txt"];
-const CACHE_KET = "lastPage";
+const CACHE_KEY = "lastPage";
 function saveCurrentPageId(id) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, fs_1.writeFileSync)(PATHS[0], id);
         if (process.env.GITHUB_ACTIONS) {
-            yield (0, cache_1.saveCache)(PATHS, CACHE_KET);
+            yield (0, cache_1.saveCache)(PATHS, CACHE_KEY + process.env.GITHUB_RUN_NUMBER);
         }
     });
 }
 function loadLastPageId() {
     return __awaiter(this, void 0, void 0, function* () {
         const exists = process.env.GITHUB_ACTIONS
-            ? yield (0, cache_1.restoreCache)(PATHS, CACHE_KET)
+            ? yield (0, cache_1.restoreCache)(PATHS, CACHE_KEY + (Number(process.env.GITHUB_RUN_NUMBER) - 1))
             : (0, fs_1.existsSync)(PATHS[0]);
         if (exists) {
             return (0, fs_1.readFileSync)(PATHS[0], "utf-8");
