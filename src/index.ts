@@ -100,5 +100,7 @@ if (!process.env.GITHUB_ACTIONS) {
     });
   }
 
-  await saveCurrentPageId(currentPageId ? currentPageId : lastPageId);
+  if (currentPageId) {
+    await saveCurrentPageId(currentPageId);
+  }
 })();
