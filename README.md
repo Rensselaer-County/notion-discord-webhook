@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: Rensselaer-County/notion-discord-webhook@0.1.1
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.2
         with:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           DATABASE_ID: ${{ secrets.DATABASE_ID }}
@@ -33,13 +33,19 @@ jobs:
 
 ## Development
 
-1. Create `.env` with following variables:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create `.env` with the following variables:
 
    - `NOTION_API_KEY`
    - `DATABASE_ID`
    - `WEBHOOK_URL`
 
-2. Run:
+3. Run:
 
 ```bash
 npx tsc && node dist/index.js
@@ -50,7 +56,7 @@ npx tsc && node dist/index.js
 1. Before the final commit run:
 
 ```bash
-npx tsc
+npm run package
 ```
 
 2. Create a new release on GitHub and publish it to the Marketplace

@@ -7,14 +7,18 @@
   "engines": {
     "node": ">=20"
   },
+  "scripts": {
+    "package": "npx ncc build src/index.ts -o dist --source-map"
+  },
   "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "discord-api-types": "^0.37.96",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@actions/cache": "^3.2.4",
     "@actions/core": "^1.10.1",
     "@notionhq/client": "^2.2.15",
-    "discord-api-types": "^0.37.96",
     "dotenv": "^16.4.5"
   }
 }

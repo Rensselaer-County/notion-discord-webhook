@@ -11,7 +11,9 @@ import { loadLastPageId, saveCurrentPageId } from "./lastPage";
 const MAX_PAGE_AGE = 45; // in minutes
 const MAX_PAGE_COUNT = 20;
 
-configDotenv();
+if (!process.env.GITHUB_ACTIONS) {
+  configDotenv();
+}
 
 (async () => {
   const { NOTION_API_KEY, DATABASE_ID, WEBHOOK_URL } = getInputs();
