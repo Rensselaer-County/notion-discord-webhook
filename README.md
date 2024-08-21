@@ -2,6 +2,27 @@
 
 Looks for new pages in a Notion database and sends them to a Discord channel
 
+## Example
+
+```yml
+name: Run Action
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  run-action:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.1
+        with:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          DATABASE_ID: ${{ secrets.DATABASE_ID }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+```
+
 ## Inputs
 
 | Name           | Required | Description                                       |
