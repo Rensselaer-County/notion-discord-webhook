@@ -11,6 +11,12 @@ export async function loadCache() {
     return;
   }
 
+  PATHS.forEach((path) => {
+    if (!existsSync(path)) {
+      writeFileSync(path, "");
+    }
+  });
+
   await restore(
     PATHS,
     `${CACHE_KEY}-${Number(process.env.GITHUB_RUN_NUMBER) - 1}`,
