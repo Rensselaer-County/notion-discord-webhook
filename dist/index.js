@@ -66810,6 +66810,61 @@ module.exports.implForWrapper = function (wrapper) {
 
 /***/ }),
 
+/***/ 4810:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.loadCache = loadCache;
+exports.saveCache = saveCache;
+exports.getLastPageId = getLastPageId;
+exports.setCurrentPageId = setCurrentPageId;
+const cache_1 = __nccwpck_require__(7799);
+const fs_1 = __nccwpck_require__(7147);
+const PATHS = ["bugs.txt", "tasks.txt"];
+const CACHE_KEY = "last-pages";
+function loadCache() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!process.env.GITHUB_ACTIONS) {
+            return;
+        }
+        yield (0, cache_1.restoreCache)(PATHS, `${CACHE_KEY}-${Number(process.env.GITHUB_RUN_NUMBER) - 1}`, [`${CACHE_KEY}-`]);
+    });
+}
+function saveCache() {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!process.env.GITHUB_ACTIONS) {
+            return;
+        }
+        yield (0, cache_1.saveCache)(PATHS, `${CACHE_KEY}-${process.env.GITHUB_RUN_NUMBER}`);
+    });
+}
+function getLastPageId(integration) {
+    const path = PATHS[integration === "bugs" ? 0 : 1];
+    if ((0, fs_1.existsSync)(path)) {
+        return (0, fs_1.readFileSync)(path, "utf-8");
+    }
+    else {
+        return "";
+    }
+}
+function setCurrentPageId(integration, pageId) {
+    (0, fs_1.writeFileSync)(PATHS[integration === "bugs" ? 0 : 1], pageId);
+}
+
+
+/***/ }),
+
 /***/ 8687:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -66822,15 +66877,19 @@ function getInputs() {
     if (process.env.GITHUB_ACTION) {
         return {
             NOTION_API_KEY: (0, core_1.getInput)("NOTION_API_KEY", { required: true }),
-            DATABASE_ID: (0, core_1.getInput)("DATABASE_ID", { required: true }),
-            WEBHOOK_URL: (0, core_1.getInput)("WEBHOOK_URL", { required: true }),
+            BUGS_DATABASE_ID: (0, core_1.getInput)("BUGS_DATABASE_ID", { required: true }),
+            TASKS_DATABASE_ID: (0, core_1.getInput)("TASKS_DATABASE_ID", { required: true }),
+            BUGS_WEBHOOK_URL: (0, core_1.getInput)("BUGS_WEBHOOK_URL", { required: true }),
+            TASKS_WEBHOOK_URL: (0, core_1.getInput)("TASKS_WEBHOOK_URL", { required: true }),
         };
     }
     else {
         return {
             NOTION_API_KEY: process.env.NOTION_API_KEY,
-            DATABASE_ID: process.env.DATABASE_ID,
-            WEBHOOK_URL: process.env.WEBHOOK_URL,
+            BUGS_DATABASE_ID: process.env.BUGS_DATABASE_ID,
+            TASKS_DATABASE_ID: process.env.TASKS_DATABASE_ID,
+            BUGS_WEBHOOK_URL: process.env.BUGS_WEBHOOK_URL,
+            TASKS_WEBHOOK_URL: process.env.TASKS_WEBHOOK_URL,
         };
     }
 }
@@ -66859,92 +66918,28 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const client_1 = __nccwpck_require__(324);
 const dotenv_1 = __nccwpck_require__(2437);
 const getInputs_1 = __importDefault(__nccwpck_require__(8687));
-const sendMessage_1 = __importDefault(__nccwpck_require__(7661));
-const parseArrayProperty_1 = __importDefault(__nccwpck_require__(3504));
-const lastPage_1 = __nccwpck_require__(4637);
+const cache_1 = __nccwpck_require__(4810);
+const integrations_1 = __nccwpck_require__(8444);
 const MAX_PAGE_AGE = 45; // in minutes
 const MAX_PAGE_COUNT = 20;
 if (!process.env.GITHUB_ACTIONS) {
     (0, dotenv_1.configDotenv)();
 }
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    const { NOTION_API_KEY, DATABASE_ID, WEBHOOK_URL } = (0, getInputs_1.default)();
+    const { NOTION_API_KEY, BUGS_DATABASE_ID, TASKS_DATABASE_ID, BUGS_WEBHOOK_URL, TASKS_WEBHOOK_URL, } = (0, getInputs_1.default)();
     const notion = new client_1.Client({
         auth: NOTION_API_KEY,
     });
-    const response = yield notion.databases.query({
-        database_id: DATABASE_ID,
-        page_size: MAX_PAGE_COUNT,
-    });
-    const lastPageId = yield (0, lastPage_1.loadLastPageId)();
-    let currentPageId = "";
-    for (const page of response.results) {
-        const pageId = page.id;
-        const createdTime = page.created_time;
-        const timeElapsed = (new Date().getTime() - Date.parse(createdTime)) / 1000 / 60;
-        if (pageId == lastPageId || timeElapsed > MAX_PAGE_AGE) {
-            console.log("No new pages found");
-            break;
-        }
-        if (!currentPageId) {
-            currentPageId = pageId;
-        }
-        const fields = [];
-        const embed = {
-            url: page.url,
-            color: 0xffffff,
-            description: "A bug has been reported on **Notion** on the **Issue Tracker** board.",
-            timestamp: createdTime,
-        };
-        const name = page.properties.Name;
-        if (name.title.length > 0) {
-            embed.title = name.title[0].plain_text;
-        }
-        else {
-            embed.title = "Untitled";
-        }
-        const status = page.properties.Status;
-        if (status.status.name) {
-            fields.push({
-                name: "Status",
-                value: status.status.name,
-            });
-        }
-        const assign = (0, parseArrayProperty_1.default)(page.properties.Assign, true);
-        if (assign) {
-            fields.push({
-                name: "Assign",
-                value: assign,
-            });
-        }
-        const place = (0, parseArrayProperty_1.default)(page.properties.Place);
-        if (place) {
-            fields.push({
-                name: "Place",
-                value: place,
-            });
-        }
-        const type = (0, parseArrayProperty_1.default)(page.properties.Type);
-        if (type) {
-            fields.push({
-                name: "Type",
-                value: type,
-            });
-        }
-        embed.fields = fields;
-        yield (0, sendMessage_1.default)(WEBHOOK_URL, {
-            embeds: [embed],
-        });
-    }
-    if (currentPageId) {
-        yield (0, lastPage_1.saveCurrentPageId)(currentPageId);
-    }
+    yield (0, cache_1.loadCache)();
+    (0, integrations_1.processIntegration)(notion, BUGS_DATABASE_ID, BUGS_WEBHOOK_URL, "bugs");
+    (0, integrations_1.processIntegration)(notion, TASKS_DATABASE_ID, TASKS_WEBHOOK_URL, "tasks");
+    yield (0, cache_1.saveCache)();
 }))();
 
 
 /***/ }),
 
-/***/ 4637:
+/***/ 7471:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -66958,32 +66953,207 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.saveCurrentPageId = saveCurrentPageId;
-exports.loadLastPageId = loadLastPageId;
-const cache_1 = __nccwpck_require__(7799);
-const fs_1 = __nccwpck_require__(7147);
-const PATHS = ["data.txt"];
-const CACHE_KEY = "last-page";
-function saveCurrentPageId(id) {
+exports["default"] = default_1;
+const _1 = __nccwpck_require__(8444);
+const parseArrayProperty_1 = __importDefault(__nccwpck_require__(3504));
+const sendMessage_1 = __importDefault(__nccwpck_require__(7661));
+function default_1(response, webhookUrl, lastPageId) {
     return __awaiter(this, void 0, void 0, function* () {
-        (0, fs_1.writeFileSync)(PATHS[0], id);
-        if (process.env.GITHUB_ACTIONS) {
-            yield (0, cache_1.saveCache)(PATHS, `${CACHE_KEY}-${process.env.GITHUB_RUN_NUMBER}`);
+        let currentPageId = "";
+        for (const page of response) {
+            const pageId = page.id;
+            const createdTime = page.created_time;
+            const timeElapsed = (new Date().getTime() - Date.parse(createdTime)) / 1000 / 60;
+            if (pageId == lastPageId || timeElapsed > _1.MAX_PAGE_AGE) {
+                console.log("No new bugs found");
+                break;
+            }
+            if (!currentPageId) {
+                currentPageId = pageId;
+            }
+            const fields = [];
+            const embed = {
+                url: page.url,
+                color: 0xffffff,
+                description: "A bug has been reported on **Notion** on the **Issue Tracker** board.",
+                timestamp: createdTime,
+            };
+            const name = page.properties.Name;
+            if (name.title.length > 0) {
+                embed.title = name.title[0].plain_text;
+            }
+            else {
+                embed.title = "Untitled";
+            }
+            const status = page.properties.Status;
+            if (status.status.name) {
+                fields.push({
+                    name: "Status",
+                    value: status.status.name,
+                });
+            }
+            const assignee = (0, parseArrayProperty_1.default)(page.properties.Assign, true);
+            if (assignee) {
+                fields.push({
+                    name: "Assignee",
+                    value: assignee,
+                });
+            }
+            const place = (0, parseArrayProperty_1.default)(page.properties.Place);
+            if (place) {
+                fields.push({
+                    name: "Place",
+                    value: place,
+                });
+            }
+            const type = (0, parseArrayProperty_1.default)(page.properties.Type);
+            if (type) {
+                fields.push({
+                    name: "Type",
+                    value: type,
+                });
+            }
+            embed.fields = fields;
+            yield (0, sendMessage_1.default)(webhookUrl, {
+                embeds: [embed],
+            });
+        }
+        return currentPageId;
+    });
+}
+
+
+/***/ }),
+
+/***/ 8444:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.MAX_PAGE_AGE = void 0;
+exports.processIntegration = processIntegration;
+const bugs_1 = __importDefault(__nccwpck_require__(7471));
+const tasks_1 = __importDefault(__nccwpck_require__(7349));
+const cache_1 = __nccwpck_require__(4810);
+exports.MAX_PAGE_AGE = 45; // in minutes
+const MAX_PAGE_COUNT = 20;
+function processIntegration(notion, databaseId, webhookUrl, integration) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const response = (yield notion.databases.query({
+            database_id: databaseId,
+            page_size: MAX_PAGE_COUNT,
+        })).results;
+        const lastPageId = (0, cache_1.getLastPageId)("bugs");
+        let currentPageId = "";
+        if (integration === "bugs") {
+            currentPageId = yield (0, bugs_1.default)(response, webhookUrl, lastPageId);
+        }
+        else if (integration == "tasks") {
+            currentPageId = yield (0, tasks_1.default)(response, webhookUrl, lastPageId);
+        }
+        if (currentPageId) {
+            (0, cache_1.setCurrentPageId)(integration, currentPageId);
         }
     });
 }
-function loadLastPageId() {
+
+
+/***/ }),
+
+/***/ 7349:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports["default"] = default_1;
+const _1 = __nccwpck_require__(8444);
+const parseArrayProperty_1 = __importDefault(__nccwpck_require__(3504));
+const sendMessage_1 = __importDefault(__nccwpck_require__(7661));
+function default_1(response, webhookUrl, lastPageId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const exists = process.env.GITHUB_ACTIONS
-            ? yield (0, cache_1.restoreCache)(PATHS, `${CACHE_KEY}-${Number(process.env.GITHUB_RUN_NUMBER) - 1}`, [`${CACHE_KEY}-`])
-            : (0, fs_1.existsSync)(PATHS[0]);
-        if (exists) {
-            return (0, fs_1.readFileSync)(PATHS[0], "utf-8");
+        let currentPageId = "";
+        for (const page of response) {
+            const pageId = page.id;
+            const createdTime = page.created_time;
+            const timeElapsed = (new Date().getTime() - Date.parse(createdTime)) / 1000 / 60;
+            if (pageId == lastPageId || timeElapsed > _1.MAX_PAGE_AGE) {
+                console.log("No new tasks found");
+                break;
+            }
+            if (!currentPageId) {
+                currentPageId = pageId;
+            }
+            const fields = [];
+            const embed = {
+                url: page.url,
+                color: 0xffffff,
+                description: "A new task has been added on **Notion** to the **Tasks** board.",
+                timestamp: createdTime,
+            };
+            const name = page.properties.Name;
+            if (name.title.length > 0) {
+                embed.title = name.title[0].plain_text;
+            }
+            else {
+                embed.title = "Untitled";
+            }
+            const status = page.properties.Status;
+            if (status.status.name) {
+                fields.push({
+                    name: "Status",
+                    value: status.status.name,
+                });
+            }
+            const assignee = (0, parseArrayProperty_1.default)(page.properties.Assignee, true);
+            if (assignee) {
+                fields.push({
+                    name: "Assignee",
+                    value: assignee,
+                });
+            }
+            const type = (0, parseArrayProperty_1.default)(page.properties.Type);
+            if (type) {
+                fields.push({
+                    name: "Type",
+                    value: type,
+                });
+            }
+            embed.fields = fields;
+            yield (0, sendMessage_1.default)(webhookUrl, {
+                embeds: [embed],
+            });
         }
-        else {
-            return "";
-        }
+        return currentPageId;
     });
 }
 
@@ -67029,14 +67199,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports["default"] = sendMessage;
-function sendMessage(webhookUrl, payload) {
+function sendMessage(webhookUrl, body) {
     return __awaiter(this, void 0, void 0, function* () {
         return fetch(webhookUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(Object.assign({ username: "Issue Tracker", avatar_url: "https://cdn.discordapp.com/attachments/1261742215265255426/1275173490575671347/Bug.jpg?ex=66c4ed5b&is=66c39bdb&hm=fe924ba2a4f9055fb11b318009f065bd4039946288428ddcdf325899b34e549f&" }, payload)),
+            body: JSON.stringify(body),
         })
             .then((res) => {
             if (res.ok) {

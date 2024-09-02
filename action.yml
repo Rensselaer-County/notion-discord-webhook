@@ -10,11 +10,17 @@ inputs:
   NOTION_API_KEY:
     description: Notion integration internal secret
     required: true
-  DATABASE_ID:
-    description: Target Notion page database ID (located in URL)
+  BUGS_DATABASE_ID:
+    description: Target bugs Notion database ID (located in URL)
     required: true
-  WEBHOOK_URL:
-    description: Discord channel webhook URL
+  TASKS_DATABASE_ID:
+    description: Target tasks Notion database ID (located in URL)
+    required: true
+  BUGS_WEBHOOK_URL:
+    description: Discord bugs channel webhook URL
+    required: true
+  TASKS_WEBHOOK_URL:
+    description: Discord tasks channel webhook URL
     required: true
 
 runs:

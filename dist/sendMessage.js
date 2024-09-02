@@ -10,14 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = sendMessage;
-function sendMessage(webhookUrl, payload) {
+function sendMessage(webhookUrl, body) {
     return __awaiter(this, void 0, void 0, function* () {
         return fetch(webhookUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(Object.assign({ username: "Issue Tracker", avatar_url: "https://cdn.discordapp.com/attachments/1261742215265255426/1275173490575671347/Bug.jpg?ex=66c4ed5b&is=66c39bdb&hm=fe924ba2a4f9055fb11b318009f065bd4039946288428ddcdf325899b34e549f&" }, payload)),
+            body: JSON.stringify(body),
         })
             .then((res) => {
             if (res.ok) {

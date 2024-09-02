@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: Rensselaer-County/notion-discord-webhook@0.1.5
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.6
         with:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-          DATABASE_ID: ${{ secrets.DATABASE_ID }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          BUGS_DATABASE_ID: ${{ secrets.BUGS_DATABASE_ID }}
+          TASKS_DATABASE_ID: ${{ secrets.TASKS_DATABASE_ID }}
+          BUGS_WEBHOOK_URL: ${{ secrets.BUGS_WEBHOOK_URL }}
+          TASKS_WEBHOOK_URL: ${{ secrets.TASKS_WEBHOOK_URL }}
