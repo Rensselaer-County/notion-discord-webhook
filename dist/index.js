@@ -67134,18 +67134,18 @@ function default_1(response, webhookUrl, lastPageId) {
                     value: status.status.name,
                 });
             }
+            const priority = page.properties.Priority;
+            if (priority.select.name) {
+                fields.push({
+                    name: "Priority",
+                    value: priority.select.name,
+                });
+            }
             const assignee = (0, parseArrayProperty_1.default)(page.properties.Assignee, true);
             if (assignee) {
                 fields.push({
                     name: "Assignee",
                     value: assignee,
-                });
-            }
-            const type = (0, parseArrayProperty_1.default)(page.properties.Type);
-            if (type) {
-                fields.push({
-                    name: "Type",
-                    value: type,
                 });
             }
             embed.fields = fields;

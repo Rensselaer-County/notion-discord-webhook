@@ -51,19 +51,19 @@ export default async function (
       });
     }
 
+    const priority: any = page.properties.Priority;
+    if (priority.select.name) {
+      fields.push({
+        name: "Priority",
+        value: priority.select.name,
+      });
+    }
+
     const assignee = parseArrayProperty(page.properties.Assignee, true);
     if (assignee) {
       fields.push({
         name: "Assignee",
         value: assignee,
-      });
-    }
-
-    const type = parseArrayProperty(page.properties.Type);
-    if (type) {
-      fields.push({
-        name: "Type",
-        value: type,
       });
     }
 
