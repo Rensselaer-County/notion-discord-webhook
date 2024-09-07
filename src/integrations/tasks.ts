@@ -44,7 +44,7 @@ export default async function (
     }
 
     const status: any = page.properties.Status;
-    if (status.status.name) {
+    if (status.status && status.status.name) {
       fields.push({
         name: "Status",
         value: status.status.name,
@@ -52,7 +52,7 @@ export default async function (
     }
 
     const priority: any = page.properties.Priority;
-    if (priority.select.name) {
+    if (priority.select && priority.select.name) {
       fields.push({
         name: "Priority",
         value: priority.select.name,

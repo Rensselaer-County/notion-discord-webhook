@@ -45,14 +45,14 @@ function default_1(response, webhookUrl, lastPageId) {
                 embed.title = "Untitled";
             }
             const status = page.properties.Status;
-            if (status.status.name) {
+            if (status.status && status.status.name) {
                 fields.push({
                     name: "Status",
                     value: status.status.name,
                 });
             }
             const priority = page.properties.Priority;
-            if (priority.select.name) {
+            if (priority.select && priority.select.name) {
                 fields.push({
                     name: "Priority",
                     value: priority.select.name,

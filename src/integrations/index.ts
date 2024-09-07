@@ -23,7 +23,7 @@ export async function processIntegration(
     })
   ).results as DatabaseObjectResponse[];
 
-  const lastPageId = getLastPageId("bugs");
+  const lastPageId = getLastPageId(integration);
   let currentPageId = "";
 
   if (integration === "bugs") {

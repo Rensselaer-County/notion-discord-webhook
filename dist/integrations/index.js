@@ -25,7 +25,7 @@ function processIntegration(notion, databaseId, webhookUrl, integration) {
             database_id: databaseId,
             page_size: MAX_PAGE_COUNT,
         })).results;
-        const lastPageId = (0, cache_1.getLastPageId)("bugs");
+        const lastPageId = (0, cache_1.getLastPageId)(integration);
         let currentPageId = "";
         if (integration === "bugs") {
             currentPageId = yield (0, bugs_1.default)(response, webhookUrl, lastPageId);

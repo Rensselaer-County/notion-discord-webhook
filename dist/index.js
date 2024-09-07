@@ -66995,7 +66995,7 @@ function default_1(response, webhookUrl, lastPageId) {
                 embed.title = "Untitled";
             }
             const status = page.properties.Status;
-            if (status.status.name) {
+            if (status.status && status.status.name) {
                 fields.push({
                     name: "Status",
                     value: status.status.name,
@@ -67065,7 +67065,7 @@ function processIntegration(notion, databaseId, webhookUrl, integration) {
             database_id: databaseId,
             page_size: MAX_PAGE_COUNT,
         })).results;
-        const lastPageId = (0, cache_1.getLastPageId)("bugs");
+        const lastPageId = (0, cache_1.getLastPageId)(integration);
         let currentPageId = "";
         if (integration === "bugs") {
             currentPageId = yield (0, bugs_1.default)(response, webhookUrl, lastPageId);
@@ -67133,14 +67133,14 @@ function default_1(response, webhookUrl, lastPageId) {
                 embed.title = "Untitled";
             }
             const status = page.properties.Status;
-            if (status.status.name) {
+            if (status.status && status.status.name) {
                 fields.push({
                     name: "Status",
                     value: status.status.name,
                 });
             }
             const priority = page.properties.Priority;
-            if (priority.select.name) {
+            if (priority.select && priority.select.name) {
                 fields.push({
                     name: "Priority",
                     value: priority.select.name,

@@ -45,7 +45,7 @@ function default_1(response, webhookUrl, lastPageId) {
                 embed.title = "Untitled";
             }
             const status = page.properties.Status;
-            if (status.status.name) {
+            if (status.status && status.status.name) {
                 fields.push({
                     name: "Status",
                     value: status.status.name,

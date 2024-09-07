@@ -3,14 +3,14 @@ name: Run Action
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/13 * * * *"
 
 jobs:
   run-action:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: Rensselaer-County/notion-discord-webhook@0.1.8
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.9
         with:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           BUGS_DATABASE_ID: ${{ secrets.BUGS_DATABASE_ID }}
