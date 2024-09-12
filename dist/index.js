@@ -66838,11 +66838,6 @@ function loadCache() {
         if (!process.env.GITHUB_ACTIONS) {
             return;
         }
-        PATHS.forEach((path) => {
-            if (!(0, fs_1.existsSync)(path)) {
-                (0, fs_1.writeFileSync)(path, "");
-            }
-        });
         yield (0, cache_1.restoreCache)(PATHS, `${CACHE_KEY}-${Number(process.env.GITHUB_RUN_NUMBER) - 1}`, [`${CACHE_KEY}-`]);
     });
 }
@@ -66851,6 +66846,11 @@ function saveCache() {
         if (!process.env.GITHUB_ACTIONS) {
             return;
         }
+        PATHS.forEach((path) => {
+            if (!(0, fs_1.existsSync)(path)) {
+                (0, fs_1.writeFileSync)(path, "");
+            }
+        });
         yield (0, cache_1.saveCache)(PATHS, `${CACHE_KEY}-${process.env.GITHUB_RUN_NUMBER}`);
     });
 }
@@ -66925,8 +66925,6 @@ const dotenv_1 = __nccwpck_require__(2437);
 const getInputs_1 = __importDefault(__nccwpck_require__(8687));
 const cache_1 = __nccwpck_require__(4810);
 const integrations_1 = __nccwpck_require__(8444);
-const MAX_PAGE_AGE = 45; // in minutes
-const MAX_PAGE_COUNT = 20;
 if (!process.env.GITHUB_ACTIONS) {
     (0, dotenv_1.configDotenv)();
 }
