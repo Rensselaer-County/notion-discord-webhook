@@ -23,11 +23,6 @@ function loadCache() {
             return;
         }
         yield (0, cache_1.restoreCache)(PATHS, `${CACHE_KEY}-${Number(process.env.GITHUB_RUN_NUMBER) - 1}`, [`${CACHE_KEY}-`]);
-        PATHS.forEach((path) => {
-            if (!(0, fs_1.existsSync)(path)) {
-                (0, fs_1.writeFileSync)(path, "");
-            }
-        });
     });
 }
 function saveCache() {
@@ -35,6 +30,11 @@ function saveCache() {
         if (!process.env.GITHUB_ACTIONS) {
             return;
         }
+        PATHS.forEach((path) => {
+            if (!(0, fs_1.existsSync)(path)) {
+                (0, fs_1.writeFileSync)(path, "");
+            }
+        });
         yield (0, cache_1.saveCache)(PATHS, `${CACHE_KEY}-${process.env.GITHUB_RUN_NUMBER}`);
     });
 }

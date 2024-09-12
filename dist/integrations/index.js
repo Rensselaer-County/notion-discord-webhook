@@ -34,6 +34,7 @@ function processIntegration(notion, databaseId, webhookUrl, integration) {
             currentPageId = yield (0, tasks_1.default)(response, webhookUrl, lastPageId);
         }
         if (currentPageId) {
+            console.log(2);
             (0, cache_1.setCurrentPageId)(integration, currentPageId);
         }
     });

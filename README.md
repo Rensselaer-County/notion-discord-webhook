@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: Rensselaer-County/notion-discord-webhook@0.1.10
+      - uses: Rensselaer-County/notion-discord-webhook@0.1.11
         with:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
           BUGS_DATABASE_ID: ${{ secrets.BUGS_DATABASE_ID }}

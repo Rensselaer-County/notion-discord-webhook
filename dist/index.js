@@ -66934,8 +66934,8 @@ if (!process.env.GITHUB_ACTIONS) {
         auth: NOTION_API_KEY,
     });
     yield (0, cache_1.loadCache)();
-    (0, integrations_1.processIntegration)(notion, BUGS_DATABASE_ID, BUGS_WEBHOOK_URL, "bugs");
-    (0, integrations_1.processIntegration)(notion, TASKS_DATABASE_ID, TASKS_WEBHOOK_URL, "tasks");
+    yield (0, integrations_1.processIntegration)(notion, BUGS_DATABASE_ID, BUGS_WEBHOOK_URL, "bugs");
+    yield (0, integrations_1.processIntegration)(notion, TASKS_DATABASE_ID, TASKS_WEBHOOK_URL, "tasks");
     yield (0, cache_1.saveCache)();
 }))();
 

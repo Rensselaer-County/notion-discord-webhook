@@ -24,8 +24,13 @@ if (!process.env.GITHUB_ACTIONS) {
 
   await loadCache();
 
-  processIntegration(notion, BUGS_DATABASE_ID, BUGS_WEBHOOK_URL, "bugs");
-  processIntegration(notion, TASKS_DATABASE_ID, TASKS_WEBHOOK_URL, "tasks");
+  await processIntegration(notion, BUGS_DATABASE_ID, BUGS_WEBHOOK_URL, "bugs");
+  await processIntegration(
+    notion,
+    TASKS_DATABASE_ID,
+    TASKS_WEBHOOK_URL,
+    "tasks",
+  );
 
   await saveCache();
 })();
